@@ -1,0 +1,23 @@
+```mermaid
+sequenceDiagram
+    participant S as Service-Provider
+    participant D as Device-Node
+    participant R as Registrar/Privacy-CA
+
+    D->>S: Register for services
+    Note over S: Start<br>Registration
+    S-->>R: Assign a ephemeral secret (REGISTRATION- TOKEN) for registration request
+    S-->>D: Send Privacy CA information
+    D->>R: Send EK-certificate to share Unique-identity(EK)
+    D->>R: Send Attestation Identity Key to share Anonymous-Identity(AIK)
+    Note over R: EK-certificate<br>validation
+    par Makecredential
+    R-->>D: Generate & Encrypt credential secret, Wrap encryption key to AIK
+    and Activatecredential
+    D->>R: Unwrap encryption key, Decrypt credential blob
+    end
+    Note over R: AIK-credential<br>activation complete
+    R->>D: Reveal REGISTRATION- TOKEN
+    D->>S: Present REGISTRATION- TOKEN
+    Note over S: Registration<br>Complete
+```
