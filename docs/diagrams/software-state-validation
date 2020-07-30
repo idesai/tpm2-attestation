@@ -1,0 +1,15 @@
+```mermaid
+sequenceDiagram
+    participant S as Service-Provider
+    participant D as Device-Node
+
+    Note over S: Start<br>Service-Request-Part-2
+    S->>D: Request system software state attestation<br>Send Challenge-NONCE
+    D-->>S: Generate/Sign PCR attestation quote with AIK
+    par Attestation Quote Validation
+    S->>S: 1. Challenge-NONCE is valid
+    S->>S: 2. Signature over the attestation quote is valid
+    S->>S: 3. PCR data from attestation quote is known and valid.
+    end 
+    Note over S: Service-Request-Part-2<br>Complete
+```
