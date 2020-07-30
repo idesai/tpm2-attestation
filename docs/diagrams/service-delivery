@@ -1,0 +1,12 @@
+```mermaid
+sequenceDiagram
+    participant S as Service-Provider
+    participant D as Device-Node
+    Note over S: Start<br>Service-Delivery
+    S->>D: Generate and wrap a shared SERVICE-SECRET using device AIK
+    Note over D: Provision SERVICE-SECRET
+    D->>S: Request service-data-content
+    S-->>D: Encrypt service-data-content using SERVICE-SECRET and send
+    Note over S: Service-Delivery<br>Complete
+    Note over D: Decrypt service-data-content using SERVICE-SECRET
+```
