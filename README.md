@@ -10,3 +10,5 @@ demonstration purpose. It has not been evaluated for production use.***
 
 ## Attestation demonstration
 ![Attestation-demo](/docs/diagrams/tpm2-attestation-demo.gif)
+
+[![HitCount](http://hits.dwyl.com/idesai/tpm2-attestation.svg)](http://hits.dwyl.com/idesai/tpm2-attestation)
