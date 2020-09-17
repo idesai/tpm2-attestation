@@ -10,3 +10,5 @@ demonstration purpose. It has not been evaluated for production use.***
 
 ## Attestation demonstration
 ![Attestation-demo](/docs/diagrams/tpm2-attestation-demo.gif)
+
+![visitors](https://visitor-badge.glitch.me/badge?page_id=tpm2-attestation-visitor-badge)
