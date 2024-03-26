@@ -254,7 +254,7 @@ process_device_software_state_validation_request() {
     --pcr-list "$pcr_selection" \
     --pcr pcr.bin -Q
 
-    cp attestation_quote.dat attestation_quote.signature \
+    cp attestation_quote.dat attestation_quote.signature pcr.bin \
     $service_provider_location/.
 
     return 0
