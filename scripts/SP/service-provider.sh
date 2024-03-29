@@ -202,6 +202,43 @@ system_software_state_validation() {
    return 0
 }
 
+device_service_content_key_validation() {
+   request_service_content_key_string="Retrieving service content key from device"
+   max_wait=60
+   wait_loop $max_wait d_s_service_content_key.pub
+   if [ $event_file_found == 0 ];then
+       LOG_ERROR "$request_service_content_key_string"
+       return 1
+   fi
+   event_file_found=0
+   LOG_INFO "$request_service_content_key_string"
+
+   max_wait=60
+   wait_loop $max_wait d_s_service_content_key_pub.sig
+   if [ $event_file_found == 0 ];then
+       LOG_ERROR "$request_service_content_key_string"
+       return 1
+   fi
+   event_file_found=0
+   LOG_INFO "$request_service_content_key_string"
+
+   openssl dgst -sha256 -binary d_s_service_content_key.pub > service_content_key.pub.digest
+
+   openssl pkeyutl \
+      -verify \
+      -in service_content_key.pub.digest \
+      -sigfile d_s_service_content_key_pub.sig \
+      -pubin \
+      -inkey d_s_service_aik.pub \
+      -keyform pem \
+      -pkeyopt digest:sha256
+   if [ $? == 1 ];then
+      return 1
+   fi
+
+   return 0
+}
+
 request_device_service() {
    # Start device service registration with device identity challenge
    request_device_service_status_string="Anonymous identity validation by Privacy-CA."
@@ -223,13 +260,25 @@ request_device_service() {
    fi
    LOG_INFO "$request_device_service_status_string"
 
+   # Verify service content key from the device
+   request_device_service_status_string="Device service content key validation."
+   device_service_content_key_validation
+   if [ $? == 1 ];then
+      LOG_ERROR "$request_device_service_status_string"
+      rm -f d_s_service_aik.pub
+      rm -f d_s_service_content_key.pub
+      return 1
+   fi
+   LOG_INFO "$request_device_service_status_string"
+
    # Encrypt service data content and deliver
    echo "$SERVICE_CONTENT" > service-content.plain
-    openssl rsautl -encrypt -inkey d_s_service_aik.pub -pubin \
+    openssl rsautl -encrypt -inkey d_s_service_content_key.pub -pubin \
     -in service-content.plain -out s_d_service_content.encrypted
 
     cp s_d_service_content.encrypted $device_location/.
     rm -f d_s_service_aik.pub
+    rm -f d_s_service_content_key.pub
     rm -f s_d_service_content.encrypted
     rm -f service-content.plain
     LOG_INFO "Sending service-content: \e[5m$SERVICE_CONTENT"

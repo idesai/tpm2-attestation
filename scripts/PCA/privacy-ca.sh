@@ -53,9 +53,13 @@ credential_challenge() {
     loaded_key_name=`cat rsa_ak.name | xxd -p -c $file_size`
 
     echo "this is my secret" > file_input.data
-    tpm2_makecredential --tcti none --encryption-key rsa_ek.pub \
-    --secret file_input.data --name $loaded_key_name \
-    --credential-blob cred.out
+    tpm2_makecredential \
+        --tcti none \
+        --encryption-key rsa_ek.pub \
+        --secret file_input.data \
+        --name $loaded_key_name \
+        --credential-blob cred.out \
+        -Q
     
     cp cred.out $device_location/.
 
@@ -100,7 +104,7 @@ process_device_registration_processing_with_device() {
     rm -f d_p_device_ready.txt
 
     cp $device_location/rsa_ek.pub .
-    cp $device_location/rsa_ak.pub .
+    #cp $device_location/rsa_ak.pub .
     cp $device_location/rsa_ak.name .
     LOG_INFO "Received EKcertificate EK and AIK from device"
 

@@ -1,30 +1,32 @@
 # Table of Contents
 
+- [Table of Contents](#table-of-contents)
 - [Introduction](#introduction)
-  * [Software required](#software-required)
-  * [Tools and utilities used from the tpm2-tools project](#tools-and-utilities-used-from-the-tpm2-tools-project)
+  - [Software requirements](#software-requirements)
+  - [Tools and utilities used from the tpm2-tools project](#tools-and-utilities-used-from-the-tpm2-tools-project)
 - [Attestation-Goals](#attestation-goals)
-  * [Privacy considerations](#privacy-considerations)
-    + [Why anonymity or privacy matters?](#why-anonymity-or-privacy-matters)
-    + [Solution](#solution)
-- [TPM attestation](#tpm-attestation)
-  * [What is a PCR and how are PCR values generated](#what-is-a-pcr-and-how-are-pcr-values-generated)
-    + [Initial state of the PCR](#initial-state-of-the-pcr)
-    + [Extending values into PCR indices](#extending-values-into-pcr-indices)
-    + [Golden or reference PCR](#golden-or-reference-pcr)
-  * [System software state](#system-software-state)
-  * [Roots of trust for reporting (RTR)](#roots-of-trust-for-reporting-(rtr))
-- [Roles identified in the bare bone remote attestation model](#roles-identified-in-the-bare-bone-remote-attestation-model)
-  * [Device service registration](#device-service-registration)
-  * [Service request Part 1 (Platform Anonymous Identity Validation)](#service-request-part-1-platform-anonymous-identity-validation)
-  * [Service request Part 2 (Platform Software State Validation)](#service-request-part-2-(platform-software-state-validation))
-  * [Service delivery](#service-delivery)
+  - [Privacy considerations](#privacy-considerations)
+    - [Why anonymity or privacy matters?](#why-anonymity-or-privacy-matters)
+    - [Solution](#solution)
+  - [TPM attestation](#tpm-attestation)
+  - [What is a PCR and how are PCR values generated](#what-is-a-pcr-and-how-are-pcr-values-generated)
+    - [Initial state of the PCR](#initial-state-of-the-pcr)
+    - [Extending values into PCR indices](#extending-values-into-pcr-indices)
+    - [Golden or reference PCR](#golden-or-reference-pcr)
+  - [System software state](#system-software-state)
+  - [Roots of trust for reporting (RTR)](#roots-of-trust-for-reporting-rtr)
+  - [Roles identified in the bare-bones remote attestation model](#roles-identified-in-the-bare-bones-remote-attestation-model)
+  - [Device service registration](#device-service-registration)
+  - [Service request Part 1 (Platform Anonymous Identity Validation)](#service-request-part-1-platform-anonymous-identity-validation)
+  - [Service request Part 2 (Platform Software State Validation)](#service-request-part-2-platform-software-state-validation)
+  - [Service delivery](#service-delivery)
 - [Simple attestation with tpm2-tools](#simple-attestation-with-tpm2-tools)
 - [Scripts for implementation of the simple attestation framework](#scripts-for-implementation-of-the-simple-attestation-framework)
-  * [Device-Node](#device-node)
-  * [Service-Provider](#service-provider)
-  * [Privacy-CA](#privacy-ca)
-- [FAQ](#FAQ)
+  - [Device-Node](#device-node)
+  - [Service-Provider](#service-provider)
+  - [Privacy-CA](#privacy-ca)
+- [FAQ](#faq)
+- [Author](#author)
 
 # Introduction
 
@@ -40,27 +42,29 @@ demonstration purpose. It has not been evaluated for production use.***
 
 ![Attestation-demo](/docs/diagrams/tpm2-attestation-demo.gif)
 
-## Software required
-* [tpm2-tss v2.3.0](https://github.com/tpm2-software/tpm2-tss)
-* [tpm2-abrmd v2.2.0](https://github.com/tpm2-software/tpm2-abrmd)
-* [tpm2-tools v4.0](https://github.com/tpm2-software/tpm2-tools)
-* [ibmswtpm](https://sourceforge.net/projects/ibmswtpm2/)
-* [openssl](https://linux.die.net/man/1/openssl)
+## Software requirements
+
+- [tpm2-tss v2.3.0](https://github.com/tpm2-software/tpm2-tss)
+- [tpm2-abrmd v2.2.0](https://github.com/tpm2-software/tpm2-abrmd)
+- [tpm2-tools v4.0](https://github.com/tpm2-software/tpm2-tools)
+- [ibmswtpm](https://sourceforge.net/projects/ibmswtpm2/)
+- [openssl](https://linux.die.net/man/1/openssl)
 
 ## Tools and utilities used from the tpm2-tools project
-* [tpm2_createprimary](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_createprimary.1.md)
-* [tpm2_create](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_create.1.md)
-* [tpm2_createek](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_createek.1.md)
-* [tpm2_createak](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_createak.1.md)
-* [tpm2_getekcertificate](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_getekcertificate.1.md)
-* [tpm2_makecredential](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_makecredential.1.md)
-* [tpm2_activatecredential](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_activatecredential.1.md)
-* [tpm2_pcrextend](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_pcrextend.1.md)
-* [tpm2_pcrread](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_pcrread.1.md)
-* [tpm2_quote](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_quote.1.md)
-* [tpm2_checkquote](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_checkquote.1.md)
-* [tpm2_getrandom](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_getrandom.1.md)
-* [tpm2_readpublic](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_readpublic.1.md)
+
+- [tpm2_createprimary](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_createprimary.1.md)
+- [tpm2_create](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_create.1.md)
+- [tpm2_createek](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_createek.1.md)
+- [tpm2_createak](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_createak.1.md)
+- [tpm2_getekcertificate](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_getekcertificate.1.md)
+- [tpm2_makecredential](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_makecredential.1.md)
+- [tpm2_activatecredential](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_activatecredential.1.md)
+- [tpm2_pcrextend](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_pcrextend.1.md)
+- [tpm2_pcrread](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_pcrread.1.md)
+- [tpm2_quote](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_quote.1.md)
+- [tpm2_checkquote](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_checkquote.1.md)
+- [tpm2_getrandom](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_getrandom.1.md)
+- [tpm2_readpublic](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_readpublic.1.md)
 
 # Attestation-Goals
 
@@ -96,6 +100,7 @@ defeats the anonymity or privacy of the platform user.
 Let's use a hypothetical example of a smart-lock device that has an embedded
 application. It has integrated multiple microservices from different providers
 that provide various services, namely:
+
 1. Two-factor-authentication(2FA).
 2. Facial-recognition.
 3. Device-Logs.
@@ -110,6 +115,7 @@ the device consistently certain times of the day which updates the device logs.
 ### Solution
 
 There are at least four possible ways to resolve this.
+
 1. Every user uses the same private/public key pair to sign attestation blobs.
    Cryptographically, this method is as strong as the process and controls
    involved in duplicating the private key into multiple platforms.
@@ -118,12 +124,14 @@ There are at least four possible ways to resolve this.
    Revocation of the key implies that all the platforms having the key must be
    revoked and re-provisioned with new key. Refer [tpm2_import](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_import.1.md)
    that demonstrates a way to import external keys into the TPM.
+
 2. Every user has a unique private key, however, all the private keys keys map
    to a single public key. This is possible with [Intel® EPID](https://eprint.iacr.org/2009/095.pdf)
    technology. EPID also affords a mechanism to revoke a single key or all the
    platforms in the group. A similar direct-anonymous-attestation (DAA) based on
    elliptic curve cryptography scheme is also available in the TPM and is called
    ECDAA; it is not discussed in this tutorial.
+
 3. Every user generates and uses a new key (ephemeral key) every time an
    attestation blob has to be signed. There are some unique challenges with this.
    If every attestation blob is signed with a brand-new key, how to infer the
@@ -131,33 +139,35 @@ There are at least four possible ways to resolve this.
    and hence the attestation. It then follows that we need an anonymous identity
    that is cryptographically bound to a unique trusted identity and that the
    unique identity is never revealed to any entity other than the Privacy-CA.
+
 4. A variant of #3. One AIK per party that's verifying attestations. Allows
    abstracting the client ID, but the verifier knows it's the same client on
    subsequent verifications. This is useful in applications like banking etc.
 
 Note: Platform anonymity can also be defeated if the platform's host-name and or
-ip-address remains the same on every connection. This is not a topic of
+IP address remains the same on every connection. This is not a topic of
 discussion here, yet there is an assumption made here that sufficient measures
 are taken by the platform user to resolve this using a
 [VPN](https://www.pcmag.com/how-to/how-to-hide-your-ip-address) or other
 reasonable mechanisms.
 
-# TPM attestation
+## TPM attestation
 
-Depending on the robustness and privacy rules of the system, platform
-anonymity may not be mandatory and so privacy considerations don't apply. If
-that is the case or if methods #1 or #2 discussed above suffice your attestation
-and privacy needs, subsequent sections detailing information on TCG endorsement
-keys (EK) and attestation identity keys (AIK) are irrelevant.
+Depending on the robustness and privacy rules of the system, platform anonymity
+may not be mandatory and so privacy considerations don't apply. If that is the
+case or if methods #1 or #2 discussed above suffice your attestation and privacy
+needs then subsequent sections detailing information on TCG endorsement keys
+(EK) and attestation identity keys (AIK) are irrelevant.
 
 Note: A more detailed discussion on TPM attestation terminologies can be found
 [here](https://tpm2-software.github.io/tpm2-tss/getting-started/2019/12/18/Remote-Attestation.html).
 This document expands on that discussion to demonstrate how one can set up a
-minimal or bare bones attestation framework using tpm2-tools.
+minimal or bare-bones attestation framework using tpm2-tools.
 
 With these definitions in mind, let's dive straight into TPM attestation topic.
 Of the various object types in the TPM, the following discussion is restricted
-to how the TPM PCR data can be attested securely and anonymously using method #3.
+to how the TPM PCR data can be attested securely and anonymously using method
+#3.
 
 ## What is a PCR and how are PCR values generated
 
@@ -332,6 +342,7 @@ Using any of the 3 methods above the GOLDEN_PCR value is
 In a nutshell, this is a single digest aka measurement of interesting/ critical
 pieces of system software. To do this, a trusted portion of the software does
 the following:
+
 1. Calculates the hash of the software module that will be loaded for execution.
 2. Sends over the digest to the TPM and requests it be extended in the PCR.
 
@@ -363,6 +374,7 @@ is to be used by the privacy administrator. The primary key created under the
 endorsement hierarchy provides the unique identity and is called the endorsement
 key (EK). Following properties make EKs special amongst other primary keys that
 can be created under any of the hierarchies:
+
 1. TCG EK cannot be used as a signing key.
 2. TCG EK authentication is a policy that references endorsement hierarchy
 authorization.
@@ -379,25 +391,27 @@ is also available that has all the defaults specified by TCG EK credential spec.
 The anonymous identity is the attestation identity key (AIK) created with the EK
 as its parent. There is no specific key template that is mandated by TCG that
 determines the AIK key attributes or authorization model. Since the key is
-typically used in privacy sensitive operations like quoting/ signing/ certifying
-, the key is a signing key created under endorsement hierarchy with privacy
-administrator controls. And so it's authorization model typically references the
-authorization of the endorsement hierarchy through a policy. The association of
-the AIK to an EK is done using a cryptographical method called credential
-activation. Unlike EK which is a constant/ unique primary key that can be
-re-created, the AIK keys are ephemeral. In that, every time an AIK is created it
-results in a brand-new key and thus makes the key anonymous. The AIK as
-mentioned is a child of the EK primary key and can be created with the tool
+typically used in privacy-sensitive operations like quoting/ signing/
+certifying, the key is a signing key created under endorsement hierarchy with
+privacy administrator controls. And so it's authorization model typically
+references the authorization of the endorsement hierarchy through a policy. The
+association of the AIK to an EK is done using a cryptographical method called
+credential activation. Unlike EK which is a constant/ unique primary key that
+can be re-created, the AIK keys are ephemeral. In that, every time an AIK is
+created it results in a brand-new key and thus makes the key anonymous. The AIK
+as mentioned is a child of the EK primary key and can be created with the tool
 [tpm2_create](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_create.1.md).
-Alternatively, the key can also be created using the [tpm2_createak](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_createak.1.md)
-in order to simply attestation. The tool implements the TPM2_CC_Create command
+Alternatively, the key can also be created using the
+[tpm2_createak](https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_createak.1.md)
+in order to simplify attestation which implements the TPM2_CC_Create command
 with the most commonly used AIK properties.
 
 In summary,
+
 1. The TPM manufacturer EK certificate vouches for unique identity;
 while the credential activation process vouches the association of the AIK to
 the EK and hence the TPM.
-2. tpm2_createek and tpm2_createak tools can be used to create EK and AIK. Any
+1. tpm2_createek and tpm2_createak tools can be used to create EK and AIK. Any
 further customizations to the keys outside the chosen defaults can be done by
 creating the objects with tpm2_createprimary and tpm2_create respectively.
 
@@ -410,9 +424,10 @@ or using PCR state as proxy authentication model to make authorization for TPM
 objects valid as long as system identity aka system software state does not
 change.
 
-# Roles identified in the bare bone remote attestation model
+## Roles identified in the bare-bones remote attestation model
 
-The primary goals for the minimal bare bone remote attestation are:
+The primary goals for the minimal bare-bones remote attestation are:
+
 1. To demonstrate verification of an attestation quote.
 2. The quote should contain the digest of the PCR values representing system
    software state.
@@ -421,6 +436,7 @@ The primary goals for the minimal bare bone remote attestation are:
    signer.
 
 To achieve the goals it is sufficient to have 3 players, namely:
+
 1. Device-Node: The edge platform with a TPM whose system software state is of
    interest. It generates the attestation structures with digest of PCR data
    included in the quotes. The platform signs the quotes with an attestation
@@ -432,7 +448,8 @@ To achieve the goals it is sufficient to have 3 players, namely:
    also the only entity in addition to the “Device-Node” that knows the EK for a
    given AIK from the “Device-Node“.
 3. Service-Provider: The entity that the “Device-Node“ communicates with to
-   avail services. The “Service-Provider“ need to ensure the following:<br>
+   avail services. The “Service-Provider“ needs the following guarantees:<br>
+
    a. Entity requesting services has registered its unique identity with
       the “Privacy-CA“.<br>
    b. Anonymous identity belongs to the pool of registered unique identities
@@ -444,6 +461,7 @@ down. As an example, all the verifications for anonymous-identity and
 system-software state can be handed off to an additional “Verifier“ role.**
 
 Let's now look at the various stages of our example attestation framework.
+
 1. Service-registration.
 2. Service-request Part 1 (Anonymous identity validation).
 3. Service-request Part 2 (Platform software state validation).
@@ -452,7 +470,8 @@ Let's now look at the various stages of our example attestation framework.
 ## Device service registration
 
 This is the stage where the “Device-Node“ requests services from the
-“Service-Provider“. The “Service-Provider“ has two requirements at this stage.
+“Service-Provider“. The Service-Provider proceeds after the following events:
+
 1. The “Device-Node“ sends its unique key to the “Privacy-CA“
 2. The “Privacy-CA“ verifies the genuineness of the EK from the EK certificate
    validation and also the presence of the EK on the platform through the
@@ -469,7 +488,7 @@ Privacy-CA. The “Device-Node“ then presents the REGISTRATION-TOKEN to the
 Note: The “Service-Provider“ has no further information recorded about the
 platform at the end of the registration. It only knows that a registration
 request was made by some platform and that it's EK is registered in the pool
-of valid EKs with the Privacy-CA.
+of valid EK with the Privacy-CA.
 
 The sequence diagram below shows the interactions during the registration.<br>
 [Registration](/docs/diagrams/registration)
@@ -479,8 +498,9 @@ The sequence diagram below shows the interactions during the registration.<br>
 This is the stage where a registered platform makes a service request to the
 “Service-Provider“ and sends an ephemeral AIK to securely procure the services.
 The “Service-Provider“ needs to know the following:
+
 1. The AIK is a valid one and that the Privacy-CA can prove that the AIK is
-   bound to an EK from the Privacy-CA's trusted pool of EKs.
+   bound to an EK from the Privacy-CA's trusted pool of EK.
 2. The AIK is from a TPM currently accessible to the platform.
 
 In order to achieve this, The Privacy-CA needs to request the EK from the
@@ -620,8 +640,8 @@ The sequence diagram below shown the interactions during this stage.<br>
 At this stage, by validating the “SERVICE-TOKEN“ and the attestation-quote it
 received from the “Device-Node“, the “Service-Provider“ has ascertained the
 “Device-Node“ anonymous identity and system-software state. With the system in
-a known state, the “Service-Provider“ can now wrap the “SERVICE-SECRET“ with the
-AIK Public Key.<br>
+a known state, the “Service-Provider“ can now wrap the “SERVICE-SECRET“ with a service-content-key signed by the
+device AIK.<br>
 
 [Service-delivery](/docs/diagrams/service-delivery)
 
@@ -807,22 +827,6 @@ tpm2_checkquote \
    the persistent handle or the context file as an input. In fact, this tool has
    been used in the device-node.sh scripts in this tutorial as well to generate a
    pem formatted file.
-
-2. ***Why is tpm2_createak tool not used to create the AIK in the demo scripts?***
-
-   In our demo example we intend to have an AIK with following properties:
-   a. It will have to be validated for anonymous identity relationship with EK.
-   b. It has to be a signing key for it to be used to sign an attestation quote.
-   c. It has to be usable as RSA encrypt/ decrypt key.
-
-   The combination of the above properties is not the default attributes chosen
-   in the tpm2_createak tool. Specifically, the key generated with tpm2_createak
-   cannot be used as a decryption key.
-   
-   Note that the authorization for using the endorsement key which is the parent
-   of the attestation identity key needs to be satisfied to be able to create
-   the AIK and is satisfied through a policy session using a policy
-   "policysecret" to reference the authorization of the endorsement hierarchy.
 
 # Author
 Imran Desai

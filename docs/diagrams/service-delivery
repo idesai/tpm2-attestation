@@ -3,7 +3,7 @@ sequenceDiagram
     participant S as Service-Provider
     participant D as Device-Node
     Note over S: Start<br>Service-Delivery
-    S->>D: Generate and wrap a shared SERVICE-SECRET using device AIK
+    S->>D: Generate and wrap a shared SERVICE-SECRET using <br> service-content-key signed with device AIK
     Note over D: Provision SERVICE-SECRET
     D->>S: Request service-data-content
     S-->>D: Encrypt service-data-content using SERVICE-SECRET and send

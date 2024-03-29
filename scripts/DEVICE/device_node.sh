@@ -104,12 +104,17 @@ device_registration() {
     tpm2_createek --ek-context rsa_ek.ctx --key-algorithm rsa \
     --public rsa_ek.pub -Q
 
-    tpm2_startauthsession -S session.ctx --policy-session -Q
-    tpm2_policysecret -S session.ctx -c e -Q
-    tpm2_create -C rsa_ek.ctx -c rsa_ak.ctx -u rsa_ak.pub -r rsa_ak.priv \
-    -P session:session.ctx -Q
-    tpm2_readpublic -c rsa_ak.ctx -f pem -o rsa_ak.pub -n rsa_ak.name -Q
-    tpm2_flushcontext session.ctx -Q
+    tpm2_createak \
+        --ek-context rsa_ek.ctx \
+        --ak-context rsa_ak.ctx \
+        --key-algorithm rsa \
+        --hash-algorithm sha256 \
+        --signing-algorithm rsassa \
+        --public rsa_ak.pub \
+        --private rsa_ak.priv \
+        --ak-name rsa_ak.name \
+        -Q
+    tpm2_readpublic -c rsa_ak.ctx -f pem -o rsa_ak.pub -Q
 
     touch fake_ek_certificate.txt
 
@@ -273,7 +278,7 @@ process_encrypted_service_data_content() {
     event_file_found=0
 
     service_data_status_string="Decryption of service-data-content receipt from Service-Provider"
-    tpm2 rsadecrypt -c rsa_ak.ctx -o s_d_service_content.decrypted \
+    tpm2 rsadecrypt -c service_content_key.ctx -o s_d_service_content.decrypted \
     s_d_service_content.encrypted -Q
     if [ $? == 1 ];then
         LOG_ERROR "$service_data_status_string"
@@ -285,6 +290,34 @@ process_encrypted_service_data_content() {
     SERVICE_CONTENT=`cat s_d_service_content.decrypted`
     LOG_INFO "Service-content: \e[5m$SERVICE_CONTENT"
     rm -f s_d_service_content.*
+
+    return 0
+}
+
+process_generate_service_content_key() {
+
+    tpm2_create \
+        -C n \
+        -c service_content_key.ctx \
+        -u service_content_key.pub \
+        -r service_content_key.priv \
+        -Q
+
+    tpm2_readpublic \
+        -c service_content_key.ctx \
+        -f pem \
+        -o d_s_service_content_key.pub \
+        -Q
+    cp d_s_service_content_key.pub $service_provider_location/.
+
+    tpm2_sign \
+        -c rsa_ak.ctx \
+        -g sha256 \
+        -s rsassa \
+        -f plain \
+        -o d_s_service_content_key_pub.sig \
+        d_s_service_content_key.pub
+    cp d_s_service_content_key_pub.sig $service_provider_location/.
 
     return 0
 }
@@ -301,6 +334,14 @@ request_device_service() {
 
     request_service_status_string="Device software state validation"
     process_device_software_state_validation_request
+    if [ $? == 1 ];then
+        LOG_ERROR "$request_service_status_string"
+        return 1
+    fi
+    LOG_INFO "$request_service_status_string"
+
+    request_service_status_string="Generating certified service key"
+    process_generate_service_content_key
     if [ $? == 1 ];then
         LOG_ERROR "$request_service_status_string"
         return 1
